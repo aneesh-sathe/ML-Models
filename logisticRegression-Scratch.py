@@ -3,9 +3,25 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Visualising and Preprocessing the Data
-df = pd.read_csv("heart.csv")
-X = df[["Age", "RestingBP", "MaxHR"]].to_numpy()
-Y = df["HeartDisease"].to_numpy()
+df = pd.read_csv("diabetes.csv")
+X = df[["Pregnancies", "Glucose", "BloodPressure", "SkinThickness",
+        "Insulin", "BMI", "DiabetesPedigreeFunction", "Age"]]
+
+# Normalising the Data
+
+
+def min_max(x, xmax, xmin):
+    return ((x-xmax) / (xmax-xmin))
+
+
+for c in X.columns:
+    xmax = X[c].max()
+    xmin = X[c].min()
+    X[c] = X[c].apply(lambda x: min_max(x, xmax, xmin))
+
+
+X = X.to_numpy()
+Y = df["Outcome"].to_numpy()
 samples = X.shape[0]
 costs = []
 
@@ -13,7 +29,7 @@ costs = []
 
 
 def sigmoid(z):
-    return 1 / (1 + np.exp(-z))
+    return (1 / (1 + (np.exp(-z))))
 
 # Gradient Descent Algorithm to minimize the Loss Function
 
@@ -50,12 +66,13 @@ def predict(x):
     return yhat
 
 
-iters = 10000
+iters = 100000
 w, b, costs = gradientDescent(iters)
+print(w, b)
 
 # Predicting on New Data
 
-print(predict([90, 300, 230]))
+print(predict([6, 148, 72, 35, 0, 33.6, 0.627, 50]))
 
 # Plot Cost vs No. of Iters
 
@@ -66,8 +83,8 @@ plt.title("Cost vs. Iters")
 plt.show()
 
 # Plot Classification Boundary
-print(Y.shape)
-print(X.T[0].shape)
+# print(Y.shape)
+# print(X.T[0].shape)
 plt.scatter(X.T[0], Y)
-plt.plot(X.T[0], sigmoid(X.T[0]), "r")
+plt.plot(len(range(2)), sigmoid(10),  "r")
 plt.show()
