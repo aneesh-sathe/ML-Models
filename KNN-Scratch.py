@@ -6,8 +6,7 @@ from collections import Counter
 
 df = pd.read_csv("diabetes.csv")
 X = df.iloc[:, :8]
-Y = df.iloc[:, 9:]
-
+Y = df.iloc[:, -1:]
 
 # Cleaning the Data
 
@@ -28,8 +27,25 @@ for column in X.columns:
     sigma = X[column].std()
     X[column] = X[column].apply(lambda x: zNorm(x, mu, sigma))
 
-def euclidDist(p,q):
-    return np.sqrt(np.sum((np.array(p) - np.array(q)) ** 2 ))
+X['Label'] = Y
+X = X.to_numpy()
 
-def KNN(data, k=3):
-    
+
+def euclidDist(p, q):
+    return np.sqrt(np.sum((np.array(p) - np.array(q)) ** 2))
+
+
+def KNN(trainData, testData, k=3):
+    distances = []
+    for i in trainData:
+        d = euclidDist(i, testData)
+        distances.append((i, d))
+    distances = sorted(distances)
+    neighbours = distances[:k][0][-1]
+    counts = Counter(neighbours)
+    prediction = max(counts, key=counts.get)
+    return prediction
+
+
+r = KNN(X, [1, 89, 66, 23, 94, 28.1, 0.167, 21, 0])
+print(r)
