@@ -53,4 +53,5 @@ def KNN(trainData, testData, k=3):
 predictedLabel = KNN(X, [0.63953049, 0.86469014, -0.0319691,  0.67020577, -0.00330798, 0.16713124,
                          0.46818687,  1.42506672, 1])
 
+# Predicting Class Label for new Data
 print(predictedLabel)
