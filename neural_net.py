@@ -17,4 +17,21 @@ def init_params(layers_conf):  # initialise the weight and bias matrices based o
 
 layers_conf = [3, 5, 2]
 a = init_params(layers_conf)
-print(a)
+
+
+def relu(x):
+    return max(0, x)
+
+
+def forwardPass(data, layers):
+    backData = [data.copy()]  # maintain a copy of the data for Backpropagation
+    for i in range(len(layers)):
+        data = np.matmul(data.T, layers[i][0]) + layers[i][1]  # y = w.x + b
+        backData.append(data.copy())
+        if i != len(layers):
+            data = relu(data)
+    return data, backData
+
+
+def loss(actual, predicted):
+    return (predicted - actual) ** 2
