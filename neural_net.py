@@ -35,3 +35,17 @@ def forwardPass(data, layers):
 
 def loss(actual, predicted):
     return (predicted - actual) ** 2
+
+
+def backwardPass(layers, backData, grads, lr=1e-4):
+    for i in range(-1, -(len(layers)+1), -1):
+        if i != len(layers):
+            grad = np.multiply(grad, np.heaviside(backData[i+1], 0))
+
+        w_grad = backData[i].T @ grad
+        b_grad = np.mean(grad, axis=0)
+
+        layers[i][0] -= lr * w_grad
+        layers[i][1] -= lr * b_grad
+
+        grad = grad @ layers[i][0].T
