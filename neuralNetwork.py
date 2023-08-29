@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 
 # we will create a 3-5-2 neural network architecture
 
+data = np.array([1, 2, 3])  # (1,3 Input Data)
+actual = np.array([4, 5])  # (1,2 Output Data)
+
 
 def init_params(layers_conf):  # initialise the weight and bias matrices based on the layers
     layers = []
@@ -16,7 +19,7 @@ def init_params(layers_conf):  # initialise the weight and bias matrices based o
 
 
 def relu(x):
-    return max(0, x)
+    return np.max(0, x)
 
 
 def forwardPass(data, layers):
@@ -36,6 +39,7 @@ def loss(actual, predicted):
 def backwardPass(layers, backData, grads, lr=1e-6):
     for i in range(-1, -(len(layers)+1), -1):
         if i != len(layers):
+            # heaviside -> approximate derivate of ReLU Function
             grads = np.multiply(grads, np.heaviside(backData[i+1], 0))
 
         w_grad = backData[i].T @ grads
@@ -58,7 +62,7 @@ for _ in range(iters):
     lossValue = loss(prediction, actual)
     loss_count.append(lossValue)
 
-    layers = backwardPass(layers, Backdata, grads)
+    layers = backwardPass(layers, Backdata, loss)
 
 plt.plot((0, len(loss_count), loss_count))  # plotting loss vs iterations
 plt.show()
