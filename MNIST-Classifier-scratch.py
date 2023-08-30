@@ -2,105 +2,112 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+''' Reading Data, Converting to Numpy Arrays'''
+
 data = pd.read_csv('train.csv')
-data.head()
-X = data.iloc[:, 1:]
 Y = data.iloc[:, 0]
+X = (data.iloc[:, 1:]).T
 X = X.to_numpy()
 Y = Y.to_numpy()
-X = X.T
-X = X/255
-
-''' Classification Neural Network will be 784-120-10 Architecture'''
 
 
-def init_params():
-    W1 = np.random.rand(784, 120) - 0.5
-    b1 = np.random.rand(120, 1) - 0.5
-    W2 = np.random.rand(120, 10) - 0.5
-    b2 = np.random.rand(10, 1) - 0.5
+def normalize(x):
+    x = x/255
+    return x
+
+
+X = normalize(X)
+
+''' 784 - 120 - 10 Architecture Neural Network for MNIST Classification'''
+
+
+def init_weights():
+    W1 = np.random.rand(120, 784) * 0.2
+    b1 = np.random.rand(120, 1) * 0.2
+    W2 = np.random.rand(10, 120) * 0.2
+    b2 = np.random.rand(10, 1) * 0.2
     return W1, b1, W2, b2
-
-
-W1, b1, W2, b2 = init_params()
 
 
 def relu(z):
     return np.maximum(0, z)
 
 
-def relu_grad(z):
-    return z > 0
+def grad_relu(z):
+    return 1 * (z > 0)
 
 
-def softmax(Z):
-    return np.exp(Z) / np.sum(np.exp(Z))
+def softmax(x):
+    max_val = np.max(x, axis=0, keepdims=True)
+    e_x = np.exp(x - max_val)
+    return e_x / np.sum(e_x, axis=0, keepdims=True)
 
 
-def forward(W1, b1, W2, b2, X):
-    Z1 = W1.T.dot(X) + b1
+def forward(X, W1, b1, W2, b2):
+    Z1 = np.dot(W1, X) + b1
     A1 = relu(Z1)
-    Z2 = W2.T.dot(Z1) + b2
+    Z2 = np.dot(W2, A1) + b2
     A2 = softmax(Z2)
     return Z1, A1, Z2, A2
 
 
-Z1, A1, Z2, A2 = forward(W1, b1, W2, b2, X)
-
-
-def loss(y_true, y_hat):
-    return np.mean((np.argmax(y_hat, 0) - y_true)**2)
-
-
 def one_hot(Y):
     m = Y.shape[0]
-    one_hot = np.zeros((m, Y.max()+1))
-    one_hot[np.arange(m), Y] = 1
-    one_hot = one_hot.T
-    return one_hot
+    y = np.zeros((m, Y.max()+1))
+    y[np.arange(m), Y] = 1
+    y = y.T
+    return y
 
 
-def backward(Z1, A1, Z2, A2, Y):
-    m = Y.shape[0]
-    y = one_hot(Y)
-    dL_dA2 = 2 * (A2 - y)
-    dA2_dZ2 = A2 * (1 - A2)
-    dL_dZ2 = dL_dA2 * dA2_dZ2
-    dL_dW2 = (1 / m) * np.dot(dL_dZ2, A1.T)
-    dL_db2 = (1 / m) * np.sum(dL_dZ2, axis=1, keepdims=True)
-
-    dZ2_dA1 = W2
-    dL_dA1 = np.dot(dZ2_dA1, dL_dZ2)
-    dA1_dZ1 = np.where(A1 > 0, 1, 0)
-    dL_dZ1 = dL_dA1 * dA1_dZ1
-    dL_dW1 = (1 / m) * np.dot(dL_dZ1, X.T)
-    dL_db1 = (1 / m) * np.sum(dL_dZ1, axis=1, keepdims=True)
-    return dW1.T, db1, dW2.T, db2
+def loss(y_true, y_pred):
+    return np.mean((y_true - y_pred)**2)
 
 
-def update_params(W1, b1, W2, b2, dW1, db1, dW2, db2, lr):
-    W1 = W1 - lr*dW1
-    W2 = W2 - lr*dW2
-    b1 = b1 - lr*db1
-    b2 = b2 - lr*db2
+def backward(Z1, A1, Z2, A2, W2, y):
+    m = y.shape[1]
+    dZ2 = 2*(A2 - y)
+    dW2 = (1 / m) * np.dot(dZ2, A1.T)
+    db2 = (1 / m) * np.sum(dZ2, axis=1, keepdims=True)
+    dA1 = np.dot(W2.T, dZ2)
+    dZ1 = dA1 * (Z1 > 0)
+    dW1 = (1 / m) * np.dot(dZ1, X.T)
+    db1 = (1 / m) * np.sum(dZ1, axis=1, keepdims=True)
+
+    '''Gradient Clipping to prevent Exploading Gradients'''
+    max_gradient = 1.0
+    if np.linalg.norm(dW1) > max_gradient:
+        dW1 = (max_gradient / np.linalg.norm(dW1)) * dW1
+    if np.linalg.norm(dW2) > max_gradient:
+        dW2 = (max_gradient / np.linalg.norm(dW2)) * dW2
+
+    return dW1, db1, dW2, db2
+
+
+def update_params(W1, b1, W2, b2, dW1, db1, dW2, db2, alpha):
+    W1 -= (alpha * dW1)
+    b1 -= (alpha * db1)
+    W2 -= (alpha * dW2)
+    b2 -= (alpha * db2)
+
     return W1, b1, W2, b2
 
 
-def gradient_descent(X, Y, iters, lr=0.001):
-    W1, b1, W2, b2 = init_params()
-    loss_array = []
+def gradient_descent(X, Y, iters, alpha=0.01):
+    W1, b1, W2, b2 = init_weights()
     y = one_hot(Y)
+    loss_count = []
     for _ in range(iters):
-        Z1, A1, Z2, A2 = forward(W1, b1, W2, b2, X)
-        dW1, db1, dW2, db2 = backward(Z1, A1, Z2, A2, Y)
-        W1, b1, W2, b2 = update_params(W1, b1, W2, b2, dW1, db1, dW2, db2, lr)
+        Z1, A1, Z2, A2 = forward(X, W1, b1, W2, b2)
+        dW1, db1, dW2, db2 = backward(Z1, A1, Z2, A2, W2, y)
+        W1, b1, W2, b2 = update_params(
+            W1, b1, W2, b2, dW1, db1, dW2, db2, alpha)
+
         if _ % 100 == 0:
-            print('Iteration :', _)
-            print('Loss :', loss(y, A2))
-            loss_array.append(loss(y, A2))
+            loss_val = loss(A2, y)
+            loss_count.append(loss_val)
+            print(f"Iteration : {_}, Loss : {loss_val}")
+            # print(f"Accuracy : {accuracy(A2, y)}")
+    return Z1, A1, Z2, A2
 
-    plt.plot(np.arange(0, iters, 100), loss_array)
-    return W1, b1, W2, b2
 
-
-gradient_descent(X, Y, 2000, lr=0.0001)
+_, _, _, A2 = gradient_descent(X, Y, 1000)
