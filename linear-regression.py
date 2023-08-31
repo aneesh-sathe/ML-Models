@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 # Visualising and Preprocessing the Data
 
-df = pd.read_csv("salary.csv")
+df = pd.read_csv("data/salary.csv")
 X = df[["YearsExperience"]].to_numpy()
 Y = df["Salary"].to_numpy()
 costs = []

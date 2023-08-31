@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load & Visualize Data
-df = pd.read_csv("housing.csv")
+df = pd.read_csv("data/housing.csv")
 X = df[["housing_median_age", "total_rooms", "median_income"]]
 y = df["median_house_value"]
 

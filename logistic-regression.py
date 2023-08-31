@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Visualising and Preprocessing the Data
-df = pd.read_csv("diabetes.csv")
+df = pd.read_csv("data/diabetes.csv")
 X = df[["Pregnancies", "Glucose", "BloodPressure", "SkinThickness",
         "Insulin", "BMI", "DiabetesPedigreeFunction", "Age"]]
 

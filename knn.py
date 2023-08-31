@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from collections import Counter
 
-df = pd.read_csv("diabetes.csv")
+df = pd.read_csv("data/diabetes.csv")
 X = df.iloc[:, :8]
 Y = df.iloc[:, -1:]
 

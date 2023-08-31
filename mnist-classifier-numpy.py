@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 ''' Reading Data, Converting to Numpy Arrays'''
 
-data = pd.read_csv('/data/mnist.csv')
+data = pd.read_csv('data/mnist.csv')
 Y = data.iloc[:, 0]
 X = (data.iloc[:, 1:]).T
 X = X.to_numpy()
