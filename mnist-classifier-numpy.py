@@ -107,6 +107,9 @@ def gradient_descent(X, Y, iters, alpha=0.01):
             loss_count.append(loss_val)
             print(f"Iteration : {_}, Loss : {loss_val}")
             # print(f"Accuracy : {accuracy(A2, y)}")
+
+    plt.plot(np.arange(0, iters, 100), loss_count)  # plot iters vs loss
+    plt.show()
     return Z1, A1, Z2, A2
 
 
