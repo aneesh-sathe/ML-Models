@@ -1,2 +1,2 @@
-# ML-Models
-Implementation of ML Models from Scratch/ using Frameworks like SKLearn
+## ML-Models
+Implementation of ML Models using Vanilla Python, Numpy, Pandas and Matplotlib.
